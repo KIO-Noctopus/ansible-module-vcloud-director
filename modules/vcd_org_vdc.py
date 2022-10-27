@@ -242,6 +242,7 @@ changed: true if resource has been changed else false
 '''
 
 
+from importlib.metadata import requires
 from pyvcloud.vcd.org import Org
 from pyvcloud.vcd.vdc import VDC
 from pyvcloud.vcd.system import System
@@ -257,7 +258,8 @@ ORG_VDC_OPERATIONS = ['add_storage_profile',
                       'list_storage_profiles']
 ORG_VDC_ALLOCATION_MODELS = ['AllocationVApp',
                              'AllocationPool',
-                             'ReservationPool']
+                             'ReservationPool',
+                             'Flex']
 
 
 def org_vdc_argument_spec():
@@ -286,9 +288,11 @@ def org_vdc_argument_spec():
         uses_fast_provisioning=dict(type='bool', required=False),
         over_commit_allowed=dict(type='bool', required=False),
         vm_discovery_enabled=dict(type='bool', required=False),
+        includeMemoryOverhead=dict(type='bool', required=False),
         is_enabled=dict(type='bool', required=False),
         state=dict(choices=ORG_VDC_STATES, required=False),
         operation=dict(choices=ORG_VDC_OPERATIONS, required=False),
+
     )
 
 
@@ -363,6 +367,7 @@ class Vdc(VcdAnsibleModule):
         uses_fast_provisioning = self.params['uses_fast_provisioning']
         over_commit_allowed = self.params['over_commit_allowed']
         vm_discovery_enabled = self.params['vm_discovery_enabled']
+        includeMemoryOverhead = self.params['includeMemoryOverhead'] or False 
         response = dict()
         response['changed'] = False
         response['msg'] = self.params["description"] or "None"
@@ -393,6 +398,7 @@ class Vdc(VcdAnsibleModule):
                 uses_fast_provisioning=uses_fast_provisioning,
                 over_commit_allowed=over_commit_allowed,
                 vm_discovery_enabled=vm_discovery_enabled,
+                includeMemoryOverhead= includeMemoryOverhead,
                 is_enabled=is_enabled)
             self.execute_task(create_vdc_task.Tasks.Task[0])
             response['msg'] = 'VDC {} has been created'.format(vdc_name)
